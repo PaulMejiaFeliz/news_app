@@ -46,9 +46,10 @@ class QueryBuilder
     public function selectFieldsById($table, $fields, $id)
     {
         if (in_array($table, $this->tables)) {
+            $fields = implode(', ', $fields);
             $statement = mysqli_prepare(
                 $this->con,
-                "SELECT * FROM {$table} WHERE id = ?"
+                "SELECT {$fields} FROM {$table} WHERE id = ?"
             );
             $statement->bind_param("i", $id);
             $statement->execute();
@@ -65,10 +66,16 @@ class QueryBuilder
             $query .= " {$keys}=?;";
             $statement = mysqli_prepare($this->con, $query);
             $statement->bind_param($types, ...array_values($content));
-               
             $statement->execute();
 
-            return $statement->get_result()->fetch_assoc();
+            $rows = [];
+            $result = $statement->get_result();
+            while ($row = $result->fetch_assoc()) {
+                $rows[] = $row;
+            }
+            $statement->close();
+
+            return $rows;
         }
     }
 
@@ -83,8 +90,14 @@ class QueryBuilder
             $statement->bind_param($types, ...array_values($content));
                
             $statement->execute();
-
-            return $statement->get_result()->fetch_assoc();
+            $rows = [];
+            $result = $statement->get_result();
+            while ($row = $result->fetch_assoc()) {
+                $rows[] = $row;
+            }
+            $statement->close();
+            
+            return $rows;
         }
     }
 

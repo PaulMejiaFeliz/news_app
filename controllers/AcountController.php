@@ -33,7 +33,7 @@ class AcountController extends Controller
                 [
                     'email' => $email
                 ]
-            );
+            )[0];
             if ($user > 0) {
                 if (strlen(trim($password)) > 0) {
                     if (!password_verify($password, $user['password'])) {

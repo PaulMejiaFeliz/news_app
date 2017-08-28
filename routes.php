@@ -7,7 +7,10 @@ $router->get("login", "Acount@login");
 $router->get("register", "Acount@register");
 $router->get("newPost", "Home@newPost");
 $router->get("postDetails", "Home@postDetails");
+$router->get("deletePost", "Home@deletePost");
+$router->get("editPost", "Home@editPost");
 
 $router->post("login", "Acount@loginPost");
 $router->post("register", "Acount@registerPost");
-$router->post("newPost", "Home@newPost");
+$router->post("newPost", "Home@postNewPost");
+$router->post("editPost", "Home@postEditPost");
