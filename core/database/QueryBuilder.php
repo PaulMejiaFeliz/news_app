@@ -3,206 +3,135 @@
 class QueryBuilder
 {
     protected $con;
-    protected $tables;
+    protected $tables = array();
 
     public function __construct(mysqli $con)
     {
         $this->con = $con;
         $tables = mysqli_query($con, "SHOW tables");
-        $this->tables = mysqli_fetch_row($tables);
+
+        while ($table = mysqli_fetch_row($tables)) {
+            $this->tables[] = $table[0];
+        }
     }
     
     public function selectAll($table)
     {
-        if(in_array($table, $this->tables))
-        {
+        if (in_array($table, $this->tables)) {
             $rows = mysqli_query($this->con, "SELECT * FROM {$table}");
 
-			$result = array();
-			while ($row = mysqli_fetch_assoc($rows)) {
-				$result[] = $row;
+            $result = array();
+            while ($row = mysqli_fetch_assoc($rows)) {
+                $result[] = $row;
             }
             
-			return $result;
+            return $result;
         }
     }
 
     public function selectById($table, $id)
     {
-        if(in_array($table, $this->tables))
-        {
-            $statement = mysqli_prepare($this->con, "SELECT * FROM {$table} WHERE id = ?");
+        if (in_array($table, $this->tables)) {
+            $statement = mysqli_prepare(
+                $this->con,
+                "SELECT * FROM {$table} WHERE id = ?"
+            );
             $statement->bind_param("i", $id);
             $statement->execute();
 
             return $statement->get_result()->fetch_assoc();
-            
+        }
+    }
+
+    public function selectFieldsById($table, $fields, $id)
+    {
+        if (in_array($table, $this->tables)) {
+            $statement = mysqli_prepare(
+                $this->con,
+                "SELECT * FROM {$table} WHERE id = ?"
+            );
+            $statement->bind_param("i", $id);
+            $statement->execute();
+
+            return $statement->get_result()->fetch_assoc();
         }
     }
 
     public function selectWhere($table, $types, $content)
     {
-        if(in_array($table, $this->tables))
-        {
-            $dbColumns = mysqli_query($this->con, "SHOW columns FROM {$table}");
-            
-            $columns = array();
-            while ($row = mysqli_fetch_assoc($dbColumns))
-            {
-                if($row["Key"] != "PRI")
-				    $columns[] = $row["Field"];
-            }
+        if (in_array($table, $this->tables) && count($content) > 0) {
+            $query = "SELECT * FROM {$table} WHERE";
+            $keys = implode("=? AND ", array_keys($content));
+            $query .= " {$keys}=?;";
+            $statement = mysqli_prepare($this->con, $query);
+            $statement->bind_param($types, ...array_values($content));
+               
+            $statement->execute();
 
-            $query = "SELECT * FROM {$table} WHERE";            
-            
-            $values = array();
-            foreach($columns as $column)
-            {
-                if(array_key_exists($column, $content))
-                {
-                    $values[$column] = $content[$column];
-                }
-            }
+            return $statement->get_result()->fetch_assoc();
+        }
+    }
 
-            if(count($values) > 0)
-            {
-                $keys = implode("=? AND ", array_keys($values));
-                $query .= " {$keys}=?;";
-                
-                $statement = mysqli_prepare($this->con, $query);
+    public function selectFieldsWhere($table, $fields, $types, $content)
+    {
+        if (in_array($table, $this->tables) && count($content) > 0) {
+            $fields = implode(', ', $fields);
+            $query = "SELECT {$fields} FROM {$table} WHERE";
+            $keys = implode("=? AND ", array_keys($content));
+            $query .= " {$keys}=?;";
+            $statement = mysqli_prepare($this->con, $query);
+            $statement->bind_param($types, ...array_values($content));
+               
+            $statement->execute();
 
-                $params[] = & $types;
-
-                $values = array_values($values);
-                for($i = 0; $i < count($values); $i++){
-                    $params[] = & $values[$i];
-                }
-
-                call_user_func_array(array($statement, 'bind_param'), $params);
-
-                $statement->execute();
-
-                return $statement->get_result()->fetch_assoc();
-            }
-            
+            return $statement->get_result()->fetch_assoc();
         }
     }
 
     public function insert($table, $types, $content)
     {
-        if(in_array($table, $this->tables))
-        {
-            $dbColumns = mysqli_query($this->con, "SHOW columns FROM {$table}");
-            
-            $columns = array();
-            while ($row = mysqli_fetch_assoc($dbColumns))
-            {
-                if($row["Key"] != "PRI")
-				    $columns[] = $row["Field"];
-            }
-
+        if (in_array($table, $this->tables) && count($content) > 0) {
             $query = "INSERT INTO {$table}";
-            
-            $values = array();
-            foreach($columns as $column)
-            {
-                if(array_key_exists($column, $content))
-                {
-                    $values[$column] = $content[$column];
-                }
+            $keys = implode(", ", array_keys($content));
+            $query .= " ({$keys}) VALUES (?";
+            for ($i = 0; $i < count($content) - 1; $i++) {
+                $query .= ", ?";
             }
+            $query .= ");";
 
-            if(count($values) > 0)
-            {
-                $keys = implode(", ", array_keys($values));
-                $query .= " ({$keys}) VALUES (?";
-                for($i = 0; $i < count($values) - 1; $i++){
-                    $query .= ", ?";
-                }
-                $query .= ");";
+            $statement = mysqli_prepare($this->con, $query);
+            $statement->bind_param($types, ...array_values($content));
+            $statement->execute();
 
-                $statement = mysqli_prepare($this->con, $query);
-
-                $params[] = & $types;
-
-                 $values = array_values($values);
-                for($i = 0; $i < count($values); $i++){
-                    $params[] = & $values[$i];
-                }
-
-                call_user_func_array(array($statement, 'bind_param'), $params);
-
-                $statement->execute();
-
-                 return $statement->insert_id;
-            }
+            return $statement->insert_id;
         }
     }
 
-    public function update($table, $idType, $id, $types, $content)
+    public function update($table, $id, $types, $content)
     {
-        if(in_array($table, $this->tables))
-        {
-            $types .= $idType;
-
-            $dbColumns = mysqli_query($this->con, "SHOW columns FROM {$table}");
-            
-            $condition;
-
-            $columns = array();
-            while ($row = mysqli_fetch_assoc($dbColumns))
-            {
-                if($row["Key"] != "PRI")
-                {
-                    $columns[] = $row["Field"];
-                }
-                else
-                {
-                    $condition = " WHERE {$row["Field"]} = ?";
-                }
-				   
-            }
-
+        if (in_array($table, $this->tables) && count($content) > 0) {
             $query = "UPDATE {$table} SET ";
-            
-            $values = array();
-            foreach($columns as $column)
-            {
-                if(array_key_exists($column, $content))
-                {
-                    $values[$column] = $content[$column];
-                }
-            }
+            $keys = implode("=? , ", array_keys($content));
+            $query .= " {$keys}=? WHERE id = ?";
+            $statement = mysqli_prepare($this->con, $query);
 
-            if(count($values) > 0)
-            {
-                $keys = implode("=? , ", array_keys($values));
-                $query .= " {$keys}=? {$condition}";
+            $content['id'] = & $id;
+            $types .= 'i';
 
-                $statement = mysqli_prepare($this->con, $query);
+            $statement->bind_param($types, ...array_values($content));
+            $statement->execute();
 
-                $params[] = & $types;
-
-                $values = array_values($values);
-                for($i = 0; $i < count($values); $i++){
-                    $params[] = & $values[$i];
-                }
-                $params[] = & $id;
-
-                call_user_func_array(array($statement, 'bind_param'), $params);
-
-                $statement->execute();
-
-                return $statement->insert_id;
-            }
+            return $statement->insert_id;
         }
     }
 
     public function deleteById($table, $id)
     {
-        if(in_array($table, $this->tables))
-        {
-            $statement = mysqli_prepare($this->con, "DELETE FROM {$table} WHERE id = ?");
+        if (in_array($table, $this->tables)) {
+            $statement = mysqli_prepare(
+                $this->con,
+                "DELETE FROM {$table} WHERE id = ?"
+            );
             $statement->bind_param("i", $id);
             $statement->execute();
         }

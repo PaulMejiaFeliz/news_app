@@ -2,27 +2,58 @@
 
 class Router
 {
-    protected $routes = [];
+    protected $routes = [
+        "GET" => [],
+        "POST" => [],
+        "PUT" => [],
+        "DELETE" => [],
+        "ERROR" => ""
+    ];
     
-    public function __construct()
+    public function __construct($errorPage)
     {
-
+        $this->routes["ERROR"] = $errorPage;
     }
 
-    public function define($routes)
+    public function get($uri, $controller)
     {
-        $this->routes = $routes;
+        $this->routes["GET"][$uri] = $controller;
     }
 
-    public function direct($uri)
+    public function post($uri, $controller)
     {
-        if(array_key_exists($uri, $this->routes))
-        {
-            return $this->routes[$uri];
+        $this->routes["POST"][$uri] = $controller;
+    }
+
+    public function put($uri, $controller)
+    {
+        $this->routes["PUT"][$uri] = $controller;
+    }
+
+    public function delete($uri, $controller)
+    {
+        $this->routes["DELETE"][$uri] = $controller;
+    }
+
+    public function direct($uri, $method = "GET")
+    {
+        if (array_key_exists($uri, $this->routes[$method])) {
+            return $this->action(
+                ...explode('@', $this->routes[$method][$uri])
+            );
+        } else {
+            return $this->action(...explode('@', $this->routes['ERROR']));
         }
-        else
-        {
-            return $this->routes['404'];
+    }
+
+    protected function action($controller, $action)
+    {
+        $controller .= "Controller";
+        $controller = new $controller;
+
+        if (method_exists($controller, $action)) {
+            return $controller->$action();
         }
-    }   
+        return $this->action(...explode('@', $this->routes['ERROR']));
+    }
 }
