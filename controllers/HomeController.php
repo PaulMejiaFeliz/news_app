@@ -15,7 +15,6 @@ class HomeController extends Controller
     {
         $this->startSession();
         $title = 'Home';
-        $myNews = [];
         $searchFields = array_values($this->filterFields);
         $filter = [ 'is_deleted' => 0 ];
         $types = 'i';
@@ -45,41 +44,60 @@ class HomeController extends Controller
             },
             $news
         );
-
-        if (isset($_SESSION['logged'])) {
-            $myNews = App::get('qBuilder')->selectWhere(
-                'news',
-                'ii',
-                [
-                    'is_deleted' => 0,
-                    'user' => $_SESSION['user']['id']
-                ]
-            );
-            $myNews = array_map(
-                function($myNew) {
-                    if (isset($myNew['user'])) {
-                        $myNew['user'] = App::get('qBuilder')->selectFieldsById(
-                            'user',
-                            [
-                                "name",
-                                "lastName",
-                                "email"
-                            ],
-                            $myNew['user']
-                        );
-                    }
-                    return $myNew;
-                },
-                $myNews
-            );
-        }
         
         return $this->view(
             'index',
             compact(
                 'title',
                 'news',
-                'myNews',
+                'searchFields'
+            )
+        );
+    }
+
+    public function myPosts()
+    {
+        $this->startSession();
+        if (!isset($_SESSION['logged'])) {
+            return header('Location: /login');
+        }
+        $title = 'My Posts';
+        $searchFields = array_values($this->filterFields);
+        $filter = [ 'is_deleted' => 0, 'user' => $_SESSION['user']['id'] ];
+        $types = 'ii';
+        if (isset($_GET["searchBy"])) {
+            $filter[array_keys($this->filterFields)[$_GET["searchBy"]]]= $_GET['value'];
+            $types .= 's';
+        }
+        $news = App::get('qBuilder')->selectWhere(
+            'news',
+            $types,
+            $filter
+        );
+           
+        $news = array_map(
+            function($new) {
+                if (isset($new['user'])) {
+                    $new['user'] = App::get('qBuilder')->selectFieldsById(
+                        'user',
+                        [
+                            "name",
+                            "lastName",
+                            "email"
+                        ],
+                        $new['user']
+                    );
+                }
+                return $new;
+            },
+            $news
+        );
+        
+        return $this->view(
+            'myPosts',
+            compact(
+                'title',
+                'news',
                 'searchFields'
             )
         );

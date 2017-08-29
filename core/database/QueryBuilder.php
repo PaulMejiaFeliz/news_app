@@ -86,7 +86,6 @@ class QueryBuilder
             $statement = mysqli_prepare($this->con, $query);
             $statement->bind_param($types, ...array_values($content));
             $statement->execute();
-
             $rows = array();
             $result = $statement->get_result();
             while ($row = $result->fetch_assoc()) {
@@ -110,14 +109,14 @@ class QueryBuilder
             }
             $statement->bind_param($types, ...array_values($content));
             $statement->execute();
-
+            
             $rows = [];
             $result = $statement->get_result();
             while ($row = $result->fetch_assoc()) {
                 $rows[] = $row;
             }
             $statement->close();
-
+            
             return $rows;
         }
     }

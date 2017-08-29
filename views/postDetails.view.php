@@ -79,37 +79,34 @@
     </div>
 </div>
 
-  <!-- Modal -->
-  <div class="modal fade" id="editCommentModal" role="dialog">
+<!-- Modal -->
+<div class="modal fade" id="editCommentModal" role="dialog">
     <div class="modal-dialog">
-    
-      <!-- Modal content-->
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title">Edit Comment</h4>
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Edit Comment</h4>
+            </div>
+            <div class="modal-body">
+                <div class='row'>
+                    <div class="col col-md-10 col-md-offset-1">
+                        <form action="/editComment" method="post">
+                            <input type="hidden" name="_method" value="patch">
+                            <input id='formCommentId' type="hidden" name="commentId"/>
+                            <div class="form-group input-group">
+                                <textarea id='formCommentContent' cols="60" rows="3" class="form-control" type="text" name="content" required><?php $comment['content'] ?? "" ?></textarea>
+                            </div>
+                            <div class="text-center">
+                                <input type="submit" class='btn btn-primary' value="Edit">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
         </div>
-        <div class="modal-body">
-        <div class='row'>
-    <div class="col col-md-10 col-md-offset-1">
-        <form action="/editComment" method="post">
-            <input type="hidden" name="_method" value="patch">
-            <input id='formCommentId' type="hidden" name="commentId"/>
-            <div class="form-group input-group">
-                <textarea id='formCommentContent' cols="60" rows="3" class="form-control" type="text" name="content" required><?php $comment['content'] ?? "" ?></textarea>
-            </div>
-            <div class="text-center">
-                <input type="submit" class='btn btn-primary' value="Edit">
-            </div>
-        </form>
     </div>
 </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        </div>
-      </div>
-      
-    </div>
-  </div>
-  <script src="public/js/comment.js"></script>
+<script src="public/js/comment.js"></script>

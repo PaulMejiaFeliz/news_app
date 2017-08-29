@@ -98,18 +98,7 @@ class AcountController extends Controller
         $errorMessage = array();
         $title = "Register";
         extract($_POST);
-        $user = count(
-            App::get('qBuilder')->selectWhere(
-                'user',
-                's',
-                [
-                    'email' => $email
-                ]
-            )
-        );
-        if ($user != 0) {
-            $errorMessage[] = "This email address is not available.";
-        }
+
         if (strlen(trim($password)) >= 5) {
             if ($password == $confirmPassword) {
                 $password = password_hash($password, PASSWORD_DEFAULT);
@@ -127,6 +116,21 @@ class AcountController extends Controller
         }
         if (strlen(trim($email)) == 0) {
             $errorMessage[] = "The email is required.";
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errorMessage[] = "This email address is not valide.";            
+        } else {
+            $user = count(
+                App::get('qBuilder')->selectWhere(
+                    'user',
+                    's',
+                    [
+                        'email' => $email
+                    ]
+                )
+            );
+            if ($user != 0) {
+                $errorMessage[] = "This email address is not available.";
+            }
         }
         if (count($errorMessage) == 0) {
             $userId = App::get('qBuilder')->insert(

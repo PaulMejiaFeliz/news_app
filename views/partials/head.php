@@ -22,7 +22,8 @@
             </div>
             <ul class="nav navbar-nav">
                 <?php if(isset($_SESSION['logged'])) : ?>
-                <li><a href="/newPost">New Post</a></li> 
+                <li><a href="/newPost">New Post</a></li>
+                <li><a href="/myPosts">My Posts</a></li>
                 <?php endif; ?>
             </ul>
             <ul class="nav navbar-nav navbar-right">
