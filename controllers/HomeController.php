@@ -223,10 +223,11 @@ class HomeController extends Controller
         if (!$_SESSION['logged']) {
             return header('Location: /login');
         }
-        if (isset($_GET['id'])) {
+        if (isset($_POST['PostId'])) {
+            $id = $_POST['PostId'];
             $qBuilder = App::get('qBuilder');
 
-            $post = $qBuilder->selectById('news', $_GET['id']);
+            $post = $qBuilder->selectById('news', $id);
             $title = $post['title'] ?? "";
             $owner = true;
             $exist = true;
@@ -242,7 +243,6 @@ class HomeController extends Controller
                         ]
                     );
                 } else {
-                    $title = "Deleted Post";
                     $owner = false;
                 }
             } else {
@@ -259,6 +259,9 @@ class HomeController extends Controller
                 )
             );
         }
+        return $this->view(
+            'notFound'
+        );
     }
 
     public function editPost()

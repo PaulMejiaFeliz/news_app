@@ -30,8 +30,8 @@
                         </div>
                         <div class="panel-body">
                             <h3><a href='/postDetails?id=<?= $new['id'] ?? "" ?>'><?= $new['title'] ?? "" ?></a></h3>
-                            <a class='btn btn-xs btn-warning' href="/editPost?id=<?= $new['id'] ?? "" ?>">Edit Post</a>
-                            <a class='btn btn-xs btn-danger' href="/deletePost?id=<?= $new['id'] ?? "" ?>">Delete Post</a>
+                            <a class='btn btn-sm btn-warning' href="/editPost?id=<?= $new['id'] ?? "" ?>">Edit Post</a>
+                            <button onClick="fillFormDeletePost(<?= $new['id'] ?? "" ?>);" type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deletePostModal">Delete Post</button>                            
                         </div>
                     </div>
                 </div>
@@ -45,3 +45,38 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Post Modal -->
+<div class="modal fade" id="deletePostModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Delete Post</h4>
+            </div>
+            <div class="modal-body">
+                <div class='row'>
+                    <div class="col col-md-10 col-md-offset-1">
+                        <h3>Do you really want to delete the Post?</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class='row'>
+                    <form action="/deletePost" method="post">
+                        <input name="_method" type="hidden" value="delete">
+                        <input id='deletePostFormPostId' name="PostId" type="hidden"/>
+                        <div class="col col-md-5">
+                            <input class='btn btn-danger' type='submit' value='Confirm Delete'/>
+                        </div>
+                    </form>
+                    <div class="col col-md-5 text-right">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="public/js/modals.js"></script>

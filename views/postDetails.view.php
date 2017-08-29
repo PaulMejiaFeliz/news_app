@@ -6,7 +6,7 @@
                         <?php if ($owner) : ?>
                         <div class='col-md-12'>
                             <a class='btn btn-sm btn-warning' href="/editPost?id=<?= $post['id'] ?? "" ?>">Edit Post</a>
-                            <a class='btn btn-sm btn-danger' href="/deletePost?id=<?= $post['id'] ?? "" ?>">Delete Post</a>
+                            <button onClick="fillFormDeletePost(<?= $post['id'] ?? "" ?>);" type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deletePostModal">Delete Post</button>                            
                         </div>
                         <?php endif; ?>
                         <div class='col-md-7'>
@@ -53,13 +53,11 @@
                                         <?php if ($comment['owner']) : ?>
                                         <div class='col-md-5 text-right'>
                                             <div class='col-md-8'>
-                                                <button onClick="fillForm(<?= $comment['id'] ?? "" ?>);" type="button" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#editCommentModal">Edit</button>
+                                                <button onClick="fillFormEditComment(<?= $comment['id'] ?? "" ?>);" type="button" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#editCommentModal">Edit</button>
                                             </div>
-                                            <form action="/deleteComment" method="post">
-                                                <input name="_method" type="hidden" value="delete">
-                                                <input name="commentId" type="hidden" value="<?= $comment['id'] ?? "" ?>"/>
-                                                <input class='btn btn-sm btn-danger' type='submit' value='Delete'/>
-                                            </form>
+                                            <div class='col-md-4'>
+                                                <button onClick="fillFormDeleteComment(<?= $comment['id'] ?? "" ?>);" type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteCommentModal">Delete</button>
+                                            </div>
                                         </div>
                                         <?php endif; ?>
                                     </div>
@@ -79,7 +77,7 @@
     </div>
 </div>
 
-<!-- Modal -->
+<!-- Edit Comment Modal -->
 <div class="modal fade" id="editCommentModal" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -92,9 +90,9 @@
                     <div class="col col-md-10 col-md-offset-1">
                         <form action="/editComment" method="post">
                             <input type="hidden" name="_method" value="patch">
-                            <input id='formCommentId' type="hidden" name="commentId"/>
+                            <input id='editCommentFormCommentId' type="hidden" name="commentId"/>
                             <div class="form-group input-group">
-                                <textarea id='formCommentContent' cols="60" rows="3" class="form-control" type="text" name="content" required><?php $comment['content'] ?? "" ?></textarea>
+                                <textarea id='editCommentFormCommentContent' cols="60" rows="3" class="form-control" type="text" name="content" required><?php $comment['content'] ?? "" ?></textarea>
                             </div>
                             <div class="text-center">
                                 <input type="submit" class='btn btn-primary' value="Edit">
@@ -109,4 +107,71 @@
         </div>
     </div>
 </div>
-<script src="public/js/comment.js"></script>
+
+<!-- Delete Comment Modal -->
+<div class="modal fade" id="deleteCommentModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Delete Comment</h4>
+            </div>
+            <div class="modal-body">
+                <div class='row'>
+                    <div class="col col-md-10 col-md-offset-1">
+                        <h3>Do you really want to delete the comment?</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class='row'>
+                    <form action="/deleteComment" method="post">
+                        <input name="_method" type="hidden" value="delete">
+                        <input id='deleteCommentFormCommentId' name="commentId" type="hidden"/>
+                        <div class="col col-md-5">
+                            <input class='btn btn-danger' type='submit' value='Confirm Delete'/>
+                        </div>
+                    </form>
+                    <div class="col col-md-5 text-right">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Post Modal -->
+<div class="modal fade" id="deletePostModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Delete Post</h4>
+            </div>
+            <div class="modal-body">
+                <div class='row'>
+                    <div class="col col-md-10 col-md-offset-1">
+                        <h3>Do you really want to delete the Post?</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class='row'>
+                    <form action="/deletePost" method="post">
+                        <input name="_method" type="hidden" value="delete">
+                        <input id='deletePostFormPostId' name="PostId" type="hidden"/>
+                        <div class="col col-md-5">
+                            <input class='btn btn-danger' type='submit' value='Confirm Delete'/>
+                        </div>
+                    </form>
+                    <div class="col col-md-5 text-right">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="public/js/modals.js"></script>
