@@ -2,17 +2,31 @@
 
 class HomeController extends Controller
 {
+
+    protected $filterFields = [
+        'title' => 'Title',
+        //'user' => 'User',
+        'views' => 'Views Count',
+        'created_at' => 'Created At',
+        'updated_at' => 'Updated At'
+    ];
+
     public function index()
     {
         $this->startSession();
         $title = 'Home';
         $myNews = [];
-        $news = App::get('qBuilder')->selectWhere(
+        $searchFields = array_values($this->filterFields);
+        $filter = [ 'is_deleted' => 0 ];
+        $types = 'i';
+        if (isset($_GET["searchBy"])) {
+            $filter[array_keys($this->filterFields)[$_GET["searchBy"]]]= $_GET['value'];
+            $types .= 's';
+        }
+        $news = App::get('qBuilder')->selectWhereLike(
             'news',
-            'i',
-            [
-                'is_deleted' => 0
-            ]
+            $types,
+            $filter
         );
         $news = array_map(
             function($new) {
@@ -65,7 +79,8 @@ class HomeController extends Controller
             compact(
                 'title',
                 'news',
-                'myNews'
+                'myNews',
+                'searchFields'
             )
         );
     }
@@ -98,6 +113,8 @@ class HomeController extends Controller
                     $post['user']
                 );
             }
+
+            $comments = (new CommentsController)->getComments($post['id']);
             
             $qBuilder->update(
                 'news',
@@ -114,7 +131,8 @@ class HomeController extends Controller
                 compact(
                     'post',
                     'title',
-                    'owner'
+                    'owner',
+                    'comments'
                 )
             );
         }
@@ -160,8 +178,8 @@ class HomeController extends Controller
                         'title' => $postTitle,
                         'content' => $content,
                         'user' => $user['id'],
-                        'created_at' => (new DateTime())->format('Y-m-d'),
-                        'updated_at' => (new DateTime())->format('Y-m-d')
+                        'created_at' => (new DateTime())->format('Y-m-d H:i:s'),
+                        'updated_at' => (new DateTime())->format('Y-m-d H:i:s')
                     ]
                 );
 
@@ -299,7 +317,7 @@ class HomeController extends Controller
                         [
                             'title' => $postTitle,
                             'content' => $content,
-                            'updated_at' => (new DateTime())->format('Y-m-d')
+                            'updated_at' => (new DateTime())->format('Y-m-d H:i:s')
                         ]
                     );
     

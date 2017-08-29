@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>News App<?= isset($title)? " - $title" : "" ?></title>
     <link rel="stylesheet" href="/public/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="/public/css/site.css">
 </head>
 <body>
     <nav class="navbar navbar-default">

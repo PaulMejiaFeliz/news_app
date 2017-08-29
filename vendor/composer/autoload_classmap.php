@@ -8,6 +8,7 @@ $baseDir = dirname($vendorDir);
 return array(
     'AcountController' => $baseDir . '/controllers/AcountController.php',
     'App' => $baseDir . '/core/App.php',
+    'CommentsController' => $baseDir . '/controllers/CommentsController.php',
     'ComposerAutoloaderInit55640fa0912c24d2ca988a031747af8c' => $vendorDir . '/composer/autoload_real.php',
     'Composer\\Autoload\\ClassLoader' => $vendorDir . '/composer/ClassLoader.php',
     'Composer\\Autoload\\ComposerStaticInit55640fa0912c24d2ca988a031747af8c' => $vendorDir . '/composer/autoload_static.php',

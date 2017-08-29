@@ -14,6 +14,25 @@ class QueryBuilder
             $this->tables[] = $table[0];
         }
     }
+
+    public function columns($table, $skippedFields = [])
+    {
+        if (in_array($table, $this->tables)) {
+            $query = "SHOW COLUMNS FROM {$table}";
+            if (count($skippedFields) > 0) {
+                $query .= " WHERE FIELD NOT IN ('". implode(", ", $skippedFields)."');";
+            }
+
+            $rows = mysqli_query($this->con, $query);
+
+            $result = array();
+            while ($row = mysqli_fetch_assoc($rows)) {
+                $result[] = $row['Field'];
+            }
+            
+            return $result;
+        }
+    }
     
     public function selectAll($table)
     {
@@ -65,6 +84,30 @@ class QueryBuilder
             $keys = implode("=? AND ", array_keys($content));
             $query .= " {$keys}=?;";
             $statement = mysqli_prepare($this->con, $query);
+            $statement->bind_param($types, ...array_values($content));
+            $statement->execute();
+
+            $rows = array();
+            $result = $statement->get_result();
+            while ($row = $result->fetch_assoc()) {
+                $rows[] = $row;
+            }
+            $statement->close();
+
+            return $rows;
+        }
+    }
+
+    public function selectWhereLike($table, $types, $content)
+    {
+        if (in_array($table, $this->tables) && count($content) > 0) {
+            $query = "SELECT * FROM {$table} WHERE";
+            $keys = implode(" like ? AND ", array_keys($content));
+            $query .= " {$keys} like ?;";
+            $statement = mysqli_prepare($this->con, $query);
+            foreach ($content as $key => $value) {
+                $content[$key] = "%{$value}%";
+            }
             $statement->bind_param($types, ...array_values($content));
             $statement->execute();
 

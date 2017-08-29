@@ -7,5 +7,4 @@ return [
         'password' => '1234',
         'dbName' => 'news_app_db'
     ]
-
 ];
