@@ -113,15 +113,19 @@ class QueryBuilder
         }
     }
 
-    public function selectWhereLike($table, $types, $content, $offset = null, $limit = null)
+    public function selectWhereLike($table, $types, $content, $offset = null, $limit = null, $orderBy = null)
     {
         if (in_array($table, $this->tables) && count($content) > 0) {
             $query = "SELECT * FROM {$table} WHERE";
             $keys = implode(" like ? AND ", array_keys($content));
             $query .= " {$keys} like ?";
+            if (isset($orderBy)) {
+                $query .= " ORDER BY {$orderBy}";
+            }
             if (isset($offset) && isset($limit)) {
                 $query .= ' LIMIT ?, ?;';
             }
+            
             $statement = mysqli_prepare($this->con, $query);
             foreach ($content as $key => $value) {
                 $content[$key] = "%{$value}%";
@@ -204,6 +208,10 @@ class QueryBuilder
             }
             $query .= ");";
 
+            foreach ($content as $key => $value) {
+                $content[$key] = htmlspecialchars($value);
+            }
+
             $statement = mysqli_prepare($this->con, $query);
             $statement->bind_param($types, ...array_values($content));
             $statement->execute();
@@ -222,6 +230,10 @@ class QueryBuilder
 
             $content['id'] = & $id;
             $types .= 'i';
+
+            foreach ($content as $key => $value) {
+                $content[$key] = htmlspecialchars($value);
+            }
 
             $statement->bind_param($types, ...array_values($content));
             $statement->execute();

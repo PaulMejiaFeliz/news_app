@@ -3,28 +3,31 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <div class='row'>
-                        <?php if ($owner) : ?>
-                        <div class='col-md-12'>
-                            <a class='btn btn-sm btn-warning' href="/editPost?id=<?= $post['id'] ?? "" ?>">Edit Post</a>
-                            <button onClick="fillFormDeletePost(<?= $post['id'] ?? "" ?>);" type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deletePostModal">Delete Post</button>                            
-                        </div>
-                        <?php endif; ?>
                         <div class='col-md-7'>
-                            <h5>
-                                Posted at <?= $post['updated_at'] ?? "" ?> by
+                            <div class='col-md-12'>
+                                <h1><?= $post['title'] ?? "" ?></h1>
+                                <h5> Views Count: <?= $post['views'] ?? "" ?></h5>
+                            </div>
+                        </div>
+                        <div class='col-md-5 text-right'>
+                            <p>
+                                Posted at <?= $post['created_at'] ?? "" ?> by
                                 <?= $post['user']['name'] ?? "" ?> <?= $post['user']['lastName'] ?? "" ?>
-                            </h5>
-                        </div>
-                        <div class='col-md-5'>
-                            <h5 class='text-right'> Views Count: <?= $post['views'] ?? "" ?></h5>
-                        </div>
-                        <div class='col-md-12'>
-                            <h1><?= $post['title'] ?? "" ?></h1>
+                            </p>
+                            <p>
+                            Last update at <?= $post['updated_at'] ?? "" ?> 
+                            </p>
+                            <?php if ($owner) : ?>
+                                <a class='btn btn-xs btn-warning' href="/editPost?id=<?= $post['id'] ?? "" ?>">Edit Post</a>
+                                <button onClick="fillFormDeletePost(<?= $post['id'] ?? "" ?>);" type="button" class="btn btn-xs btn-danger" data-toggle="modal" data-target="#deletePostModal">Delete Post</button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
                 <div class="panel-body">
-                    <p><?= $post['content'] ?? "" ?></p>
+                    <?php foreach($post['content'] ?? "" as $content) : ?>
+                        <p><?= $content ?></p>
+                    <?php endforeach ?>
                 </div>
                 <div class="panel-footer">
                     <h3>Comments</h3>
@@ -38,38 +41,60 @@
                     </form>
                     <br/>
                     <div class='row'>
-                        <?php foreach ($comments as $comment) : ?>
-                        <div class='col-md-offset-1 col-md-10'>
-                            <div class='panel panel-default'>
-                                <div class='panel-heading'>
-                                    <div class='row'>
-                                        <div class='col-md-7'>
-                                            <h5>
-                                                <?= $comment['user']['name'] ?? "" ?> <?= $comment['user']['lastName'] ?? "" ?>
-                                                -
-                                                <?= $comment['updated_at'] ?? "" ?>
-                                            </h5>
-                                        </div>
-                                        <?php if ($comment['owner']) : ?>
-                                        <div class='col-md-5 text-right'>
-                                            <div class='col-md-8'>
-                                                <button onClick="fillFormEditComment(<?= $comment['id'] ?? "" ?>);" type="button" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#editCommentModal">Edit</button>
+                        <?php if (count($comments) > 0) : ?>
+                            <?php foreach ($comments as $comment) : ?>
+                            <div class='col-md-offset-1 col-md-10'>
+                                <div class='panel panel-default'>
+                                    <div class='panel-heading'>
+                                        <div class='row'>
+                                            <div class='col-md-7'>
+                                                <h5>
+                                                    <?= $comment['user']['name'] ?? "" ?> <?= $comment['user']['lastName'] ?? "" ?>
+                                                    -
+                                                    <?= $comment['updated_at'] ?? "" ?>
+                                                </h5>
                                             </div>
-                                            <div class='col-md-4'>
-                                                <button onClick="fillFormDeleteComment(<?= $comment['id'] ?? "" ?>);" type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteCommentModal">Delete</button>
+                                            <?php if ($comment['owner']) : ?>
+                                            <div class='col-md-5 text-right'>
+                                                <div class='col-md-8'>
+                                                    <button onClick="fillFormEditComment(<?= $comment['id'] ?? "" ?>);" type="button" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#editCommentModal">Edit</button>
+                                                </div>
+                                                <div class='col-md-4'>
+                                                    <button onClick="fillFormDeleteComment(<?= $comment['id'] ?? "" ?>);" type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteCommentModal">Delete</button>
+                                                </div>
                                             </div>
+                                            <?php endif; ?>
                                         </div>
-                                        <?php endif; ?>
                                     </div>
-                                </div>
-                                <div class='panel-body'>
-                                    <div class='col-md-12'>
-                                        <p id='commentContent<?= $comment['id'] ?? "" ?>'><?= $comment['content'] ?? "" ?></p>
+                                    <div class='panel-body'>
+                                        <div class='col-md-12'>
+                                            <p id='commentContent<?= $comment['id'] ?? "" ?>'><?= $comment['content'] ?? "" ?></p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            <?php endforeach; ?>
+                        <?php elseif(!isset($_GET['page'])) : ?>
+                        <h4 class='text-center'>No Comments</h4>
+                        <?php else : ?>
+                            <h4 class='text-center'>Comments Page Not Found</h4>                            
+                        <?php endif; ?>
+                    </div>
+                    <div class='row'>
+                        <div class='col-md-10 col-md-offset-1 text-center'>
+                            <?php
+                                if (isset($pagination)) {
+                                    if ($pagination['count'] > 0) {
+                                        Pagination::load(
+                                            $pagination['count'],
+                                            $pagination['itemsPerPage'], 
+                                            $pagination['linksCount'],
+                                            $pagination['current']
+                                        );
+                                    }
+                                }
+                            ?>
                         </div>
-                        <?php endforeach; ?>
                     </div>
                 </div>
             </div>

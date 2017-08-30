@@ -1,6 +1,8 @@
 <div class='row'>
     <div class="col-md-offset-1">
         <h1>My News</h1>
+        <?php
+        /*
         <form action="/myPosts" method="get" class="form-inline">
             <div class="form-group input-group">
                 <span class="input-group-addon">Search By</span>
@@ -17,30 +19,50 @@
             <input class='btn btn-primary' type="submit" value='Search'/>
             <a class='btn btn-default' href="/myPosts">Clear</a>
         </form>
+       */
+       ?>
     </div>
     </br>
     <div class='row'>
         <div class="col-md-10 col-md-offset-1">
             <?php if (isset($news)) : ?>
-                <?php foreach($news as $new) : ?>
-                <div class="col-md-10 col-md-offset-1">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
-                            Posted <?= $new['updated_at'] ?? "" ?> by <?= $new['user']['name'] ?? "" ?> <?= $new['user']['lastName'] ?? "" ?>
-                        </div>
-                        <div class="panel-body">
-                            <h3><a href='/postDetails?id=<?= $new['id'] ?? "" ?>'><?= $new['title'] ?? "" ?></a></h3>
-                            <a class='btn btn-sm btn-warning' href="/editPost?id=<?= $new['id'] ?? "" ?>">Edit Post</a>
-                            <button onClick="fillFormDeletePost(<?= $new['id'] ?? "" ?>);" type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deletePostModal">Delete Post</button>                            
+                <div class='row'>
+                    <?php foreach($news as $new) : ?>
+                    <div class='row'>
+                    <div class="col-md-10 col-md-offset-1">
+                        <div class="panel panel-default">
+                            <div class="panel-footer">
+                                <div class='row'>
+                                    <div class='col-md-6'>
+                                        <h5>views: <?= $new['views'] ?? "" ?></h5>
+                                        <h3><a href='/postDetails?id=<?= $new['id'] ?? "" ?>'><?= $new['title'] ?? "" ?></a></h3>
+                                    </div>
+                                    <div class='col-md-6 text-right'>
+                                        <h5>Posted at <?= $new['created_at'] ?? "" ?> by <?= $new['user']['name'] ?? "" ?> <?= $new['user']['lastName'] ?? "" ?></h5>
+                                        <a class='btn btn-sm btn-warning' href="/editPost?id=<?= $new['id'] ?? "" ?>">Edit Post</a>
+                                        <button onClick="fillFormDeletePost(<?= $new['id'] ?? "" ?>);" type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deletePostModal">Delete Post</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <?php
-                    if (isset($pagination)) {
-                        Pagination::load($pagination);
-                    }
-                ?>
-                <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </div>
+                <div class='row'>
+                    <div class='col-md-10 col-md-offset-1 text-center'>
+                        <?php
+                            if (isset($pagination)) {
+                                Pagination::load(
+                                    $pagination['count'],
+                                    $pagination['itemsPerPage'], 
+                                    $pagination['linksCount'],
+                                    $pagination['current']
+                                );
+                            }
+                        ?>
+                    </div>
+                </div>
                 <?php if (count($news) == 0) : ?>
                     <h3>No news to show you rigth now.</h3>
                 <?php endif; ?>               

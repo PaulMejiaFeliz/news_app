@@ -29,15 +29,17 @@ class HomeController extends Controller
             $filter
         );
 
-        $pagination['countPerPage'] = 5;
+        $pagination['itemsPerPage'] = 3;
+        $pagination['linksCount'] = 5;
         $pagination['current'] = abs($_GET['page'] ?? 1);
         
         $news = App::get('qBuilder')->selectWhereLike(
             'news',
             $types,
             $filter,
-            ($pagination['current'] - 1) * $pagination['countPerPage'],
-            $pagination['countPerPage']
+            ($pagination['current'] - 1) * $pagination['itemsPerPage'],
+            $pagination['itemsPerPage'],
+            'created_at DESC'
         );
         $news = array_map(
             function($new) {
@@ -89,15 +91,16 @@ class HomeController extends Controller
             $filter
         );
 
-        $pagination['countPerPage'] = 5;
+        $pagination['itemsPerPage'] = 3;
+        $pagination['linksCount'] = 5;
         $pagination['current'] = abs($_GET['page'] ?? 1);
 
         $news = App::get('qBuilder')->selectWhere(
             'news',
             $types,
             $filter,
-            ($pagination['current'] - 1) * $pagination['countPerPage'],
-            $pagination['countPerPage']
+            ($pagination['current'] - 1) * $pagination['itemsPerPage'],
+            $pagination['itemsPerPage']
         );
            
         $news = array_map(
@@ -157,17 +160,25 @@ class HomeController extends Controller
                     $post['user']
                 );
             }
+            
+            if (isset($post['content'])) {
+                $post['content'] = explode("\n",$post['content']);
+            }
 
-            $commentsCount = App::get('qBuilder')->countWhere(
+            $pagination['count'] = App::get('qBuilder')->countWhere(
                 'news_comments',
                 'ii',
                 [
-                    'new' => $newId,
+                    'new' => $post['id'],
                     'is_deleted' => 0
                 ]
             );
+    
+            $pagination['itemsPerPage'] = 3;
+            $pagination['linksCount'] = 5;
+            $pagination['current'] = abs($_GET['page'] ?? 1);
 
-            $comments = (new CommentsController)->getComments($post['id']);
+            $comments = (new CommentsController)->getComments($post['id'], $pagination['itemsPerPage'], $pagination['current']);
             
             $qBuilder->update(
                 'news',
@@ -186,7 +197,7 @@ class HomeController extends Controller
                     'title',
                     'owner',
                     'comments',
-                    'commentsCount'
+                    'pagination'
                 )
             );
         }
