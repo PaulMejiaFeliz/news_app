@@ -35,6 +35,11 @@
                         </div>
                     </div>
                 </div>
+                <?php
+                    if (isset($pagination)) {
+                        Pagination::load($pagination);
+                    }
+                ?>
                 <?php endforeach; ?>
                 <?php if (count($news) == 0) : ?>
                     <h3>No news to show you rigth now.</h3>

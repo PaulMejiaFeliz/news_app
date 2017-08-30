@@ -15,36 +15,33 @@ class QueryBuilder
         }
     }
 
-    public function columns($table, $skippedFields = [])
+    public function selectAll($table, $offset = null, $limit = null)
     {
         if (in_array($table, $this->tables)) {
-            $query = "SHOW COLUMNS FROM {$table}";
-            if (count($skippedFields) > 0) {
-                $query .= " WHERE FIELD NOT IN ('". implode(", ", $skippedFields)."');";
-            }
-
-            $rows = mysqli_query($this->con, $query);
-
-            $result = array();
-            while ($row = mysqli_fetch_assoc($rows)) {
-                $result[] = $row['Field'];
-            }
             
-            return $result;
-        }
-    }
-    
-    public function selectAll($table)
-    {
-        if (in_array($table, $this->tables)) {
-            $rows = mysqli_query($this->con, "SELECT * FROM {$table}");
-
-            $result = array();
-            while ($row = mysqli_fetch_assoc($rows)) {
-                $result[] = $row;
+            $query = "SELECT * FROM {$table}";
+            if (isset($offset) && isset($limit)) {
+                $query .= ' LIMIT ?, ?;';
             }
-            
-            return $result;
+
+            $statement = mysqli_prepare(
+                $this->con,
+                $query
+            );
+
+            if (isset($offset) && isset($limit)) {
+                $statement->bind_param('ii', $offset, $limit);
+            }
+            $statement->execute();
+
+            $rows = array();
+            $result = $statement->get_result();
+            while ($row = $result->fetch_assoc()) {
+                $rows[] = $row;
+            }
+            $statement->close();
+
+            return $rows;
         }
     }
 
@@ -57,11 +54,9 @@ class QueryBuilder
             );
             $statement->bind_param("i", $id);
             $statement->execute();
-
             return $statement->get_result()->fetch_assoc();
         }
     }
-
     public function selectFieldsById($table, $fields, $id)
     {
         if (in_array($table, $this->tables)) {
@@ -72,18 +67,25 @@ class QueryBuilder
             );
             $statement->bind_param("i", $id);
             $statement->execute();
-
             return $statement->get_result()->fetch_assoc();
         }
     }
 
-    public function selectWhere($table, $types, $content)
+    public function selectWhere($table, $types, $content, $offset = null, $limit = null)
     {
         if (in_array($table, $this->tables) && count($content) > 0) {
             $query = "SELECT * FROM {$table} WHERE";
             $keys = implode("=? AND ", array_keys($content));
-            $query .= " {$keys}=?;";
+            $query .= " {$keys}=?";
+            if (isset($offset) && isset($limit)) {
+                $query .= ' LIMIT ?, ?;';
+            }
             $statement = mysqli_prepare($this->con, $query);
+            if (isset($offset) && isset($limit)) {
+                $content['offset'] = $offset;                
+                $content['limit'] = $limit;
+                $types .= 'ii';
+            }
             $statement->bind_param($types, ...array_values($content));
             $statement->execute();
             $rows = array();
@@ -97,15 +99,37 @@ class QueryBuilder
         }
     }
 
-    public function selectWhereLike($table, $types, $content)
+    public function countWhere($table, $types, $content)
+    {
+        if (in_array($table, $this->tables) && count($content) > 0) {
+            $query = "SELECT COUNT(*) AS '0' FROM {$table} WHERE";
+            $keys = implode("=? AND ", array_keys($content));
+            $query .= " {$keys}=?";
+            $statement = mysqli_prepare($this->con, $query);
+            $statement->bind_param($types, ...array_values($content));
+            $statement->execute();
+            $result = $statement->get_result();
+            return $result->fetch_assoc()[0];
+        }
+    }
+
+    public function selectWhereLike($table, $types, $content, $offset = null, $limit = null)
     {
         if (in_array($table, $this->tables) && count($content) > 0) {
             $query = "SELECT * FROM {$table} WHERE";
             $keys = implode(" like ? AND ", array_keys($content));
-            $query .= " {$keys} like ?;";
+            $query .= " {$keys} like ?";
+            if (isset($offset) && isset($limit)) {
+                $query .= ' LIMIT ?, ?;';
+            }
             $statement = mysqli_prepare($this->con, $query);
             foreach ($content as $key => $value) {
                 $content[$key] = "%{$value}%";
+            }
+            if (isset($offset) && isset($limit)) {
+                $content['offset'] = $offset;                
+                $content['limit'] = $limit;
+                $types .= 'ii';
             }
             $statement->bind_param($types, ...array_values($content));
             $statement->execute();
@@ -121,14 +145,40 @@ class QueryBuilder
         }
     }
 
-    public function selectFieldsWhere($table, $fields, $types, $content)
+    public function countWhereLike($table, $types, $content)
+    {
+        if (in_array($table, $this->tables) && count($content) > 0) {
+            $query = "SELECT COUNT(*) AS '0' FROM {$table} WHERE";
+            $keys = implode(" like ? AND ", array_keys($content));
+            $query .= " {$keys} like ?";
+            $statement = mysqli_prepare($this->con, $query);
+            foreach ($content as $key => $value) {
+                $content[$key] = "%{$value}%";
+            }
+            $statement->bind_param($types, ...array_values($content));
+            $statement->execute();
+            $result = $statement->get_result();
+            return $result->fetch_assoc()[0];            
+        }
+    }
+
+    public function selectFieldsWhere($table, $fields, $types, $content, $offset = null, $limit = null)
     {
         if (in_array($table, $this->tables) && count($content) > 0) {
             $fields = implode(', ', $fields);
             $query = "SELECT {$fields} FROM {$table} WHERE";
             $keys = implode("=? AND ", array_keys($content));
-            $query .= " {$keys}=?;";
+            $query .= " {$keys}=?";
+            if (isset($offset) && isset($limit)) {
+                $query .= ' LIMIT ?, ?;';
+            }
             $statement = mysqli_prepare($this->con, $query);
+
+            if (isset($offset) && isset($limit)) {
+                $content['offset'] = $offset;                
+                $content['limit'] = $limit;
+                $types .= 'ii';
+            }
             $statement->bind_param($types, ...array_values($content));
                
             $statement->execute();

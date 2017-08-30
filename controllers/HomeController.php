@@ -22,10 +22,22 @@ class HomeController extends Controller
             $filter[array_keys($this->filterFields)[$_GET["searchBy"]]]= $_GET['value'];
             $types .= 's';
         }
-        $news = App::get('qBuilder')->selectWhereLike(
+
+        $pagination['count'] = App::get('qBuilder')->countWhereLike(
             'news',
             $types,
             $filter
+        );
+
+        $pagination['countPerPage'] = 5;
+        $pagination['current'] = abs($_GET['page'] ?? 1);
+        
+        $news = App::get('qBuilder')->selectWhereLike(
+            'news',
+            $types,
+            $filter,
+            ($pagination['current'] - 1) * $pagination['countPerPage'],
+            $pagination['countPerPage']
         );
         $news = array_map(
             function($new) {
@@ -50,7 +62,8 @@ class HomeController extends Controller
             compact(
                 'title',
                 'news',
-                'searchFields'
+                'searchFields',
+                'pagination'
             )
         );
     }
@@ -69,10 +82,22 @@ class HomeController extends Controller
             $filter[array_keys($this->filterFields)[$_GET["searchBy"]]]= $_GET['value'];
             $types .= 's';
         }
-        $news = App::get('qBuilder')->selectWhere(
+
+        $pagination['count'] = App::get('qBuilder')->countWhere(
             'news',
             $types,
             $filter
+        );
+
+        $pagination['countPerPage'] = 5;
+        $pagination['current'] = abs($_GET['page'] ?? 1);
+
+        $news = App::get('qBuilder')->selectWhere(
+            'news',
+            $types,
+            $filter,
+            ($pagination['current'] - 1) * $pagination['countPerPage'],
+            $pagination['countPerPage']
         );
            
         $news = array_map(
@@ -98,7 +123,8 @@ class HomeController extends Controller
             compact(
                 'title',
                 'news',
-                'searchFields'
+                'searchFields',
+                'pagination'
             )
         );
     }
@@ -132,6 +158,15 @@ class HomeController extends Controller
                 );
             }
 
+            $commentsCount = App::get('qBuilder')->countWhere(
+                'news_comments',
+                'ii',
+                [
+                    'new' => $newId,
+                    'is_deleted' => 0
+                ]
+            );
+
             $comments = (new CommentsController)->getComments($post['id']);
             
             $qBuilder->update(
@@ -150,7 +185,8 @@ class HomeController extends Controller
                     'post',
                     'title',
                     'owner',
-                    'comments'
+                    'comments',
+                    'commentsCount'
                 )
             );
         }

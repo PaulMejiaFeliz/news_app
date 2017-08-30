@@ -15,6 +15,7 @@ return array(
     'Connection' => $baseDir . '/core/database/connection.php',
     'Controller' => $baseDir . '/core/Controller.php',
     'HomeController' => $baseDir . '/controllers/HomeController.php',
+    'Pagination' => $baseDir . '/core/Pagination.php',
     'QueryBuilder' => $baseDir . '/core/database/QueryBuilder.php',
     'Request' => $baseDir . '/core/Request.php',
     'Router' => $baseDir . '/core/Router.php',

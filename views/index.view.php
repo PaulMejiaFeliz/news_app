@@ -23,17 +23,28 @@
         <div class="col-md-8">
             <?php if (isset($news)) : ?>
                 <?php foreach($news as $new) : ?>
-                <div class="col-md-10 col-md-offset-1">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
-                            Posted <?= $new['updated_at'] ?? "" ?> by <?= $new['user']['name'] ?? "" ?> <?= $new['user']['lastName'] ?? "" ?>
-                        </div>
-                        <div class="panel-body">
-                            <h3><a href='/postDetails?id=<?= $new['id'] ?? "" ?>'><?= $new['title'] ?? "" ?></a></h3>
+                <div class='row'>
+                    <div class="col-md-10 col-md-offset-1">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                Posted <?= $new['updated_at'] ?? "" ?> by <?= $new['user']['name'] ?? "" ?> <?= $new['user']['lastName'] ?? "" ?>
+                            </div>
+                            <div class="panel-body">
+                                <h3><a href='/postDetails?id=<?= $new['id'] ?? "" ?>'><?= $new['title'] ?? "" ?></a></h3>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <?php endforeach; ?>
+                <div class='row'>
+                    <div class="col-md-10 col-md-offset-1 text-center">
+                        <?php
+                            if (isset($pagination)) {
+                                Pagination::load($pagination);
+                            }
+                        ?>
+                    </div>
+                </div>
                 <?php if (count($news) == 0) : ?>
                     <div class="col-md-offset-1">
                         <h3>No news to show you rigth now.</h3>

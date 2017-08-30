@@ -40,13 +40,17 @@ class CommentsController extends Controller
     public function getComments($newId)
     {
         $this->startSession();
+
+        $itemsPerPage = 10;
         $comments = App::get('qBuilder')->selectWhere(
             'news_comments',
             'ii',
             [
                 'new' => $newId,
                 'is_deleted' => 0
-            ]
+            ],
+            abs($_GET['commentPage'] ?? 0) * $itemsPerPage,
+            $itemsPerPage
         );
         $comments = array_map(
             function($comment) {
