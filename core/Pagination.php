@@ -6,8 +6,6 @@ class Pagination
     {
         $paginationConfig = [];
 
-        ;
-
         $paginationConfig['url'] = Request::queryString();
         if ($paginationConfig['url'] != null) {
             $strings = explode('&', $paginationConfig['url']);
@@ -32,6 +30,7 @@ class Pagination
         $paginationConfig['prevDisabled'] = $paginationConfig['current'] == 1 ? "disabled" : "";
         $paginationConfig['nextDisabled'] = $paginationConfig['current'] == $paginationConfig['pageCount'] ? "disabled" : "";
         $paginationConfig['linksCount'] = floor($paginationConfig['linksCount']/2);
+
         require "views/partials/pagination.php";
     }
 }

@@ -1,8 +1,6 @@
 <div class='row'>
     <div class="col-md-offset-1">
         <h1>My News</h1>
-        <?php
-        /*
         <form action="/myPosts" method="get" class="form-inline">
             <div class="form-group input-group">
                 <span class="input-group-addon">Search By</span>
@@ -19,8 +17,6 @@
             <input class='btn btn-primary' type="submit" value='Search'/>
             <a class='btn btn-default' href="/myPosts">Clear</a>
         </form>
-       */
-       ?>
     </div>
     </br>
     <div class='row'>

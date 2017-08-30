@@ -78,16 +78,19 @@ class HomeController extends Controller
         }
         $title = 'My Posts';
         $searchFields = array_values($this->filterFields);
-        $filter = [ 'is_deleted' => 0, 'user' => $_SESSION['user']['id'] ];
+        $filter = [];
         $types = 'ii';
         if (isset($_GET["searchBy"])) {
             $filter[array_keys($this->filterFields)[$_GET["searchBy"]]]= $_GET['value'];
             $types .= 's';
         }
 
-        $pagination['count'] = App::get('qBuilder')->countWhere(
+        $pagination['count'] = App::get('qBuilder')->countWhereEqualLike(
             'news',
             $types,
+            [
+                'is_deleted' => 0, 'user' => $_SESSION['user']['id']
+            ],
             $filter
         );
 
@@ -95,9 +98,12 @@ class HomeController extends Controller
         $pagination['linksCount'] = 5;
         $pagination['current'] = abs($_GET['page'] ?? 1);
 
-        $news = App::get('qBuilder')->selectWhere(
+        $news = App::get('qBuilder')->selectWhereEqualLike(
             'news',
             $types,
+            [
+                'is_deleted' => 0, 'user' => $_SESSION['user']['id']
+            ],
             $filter,
             ($pagination['current'] - 1) * $pagination['itemsPerPage'],
             $pagination['itemsPerPage']

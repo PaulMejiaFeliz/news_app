@@ -113,6 +113,29 @@ class QueryBuilder
         }
     }
 
+    public function countWhereEqualLike($table, $types, $contentEquals, $contentLike)
+    {
+        if (in_array($table, $this->tables)) {
+            $query = "SELECT COUNT(*) AS '0' FROM {$table} WHERE";
+            
+            $keys = implode("=? AND ", array_keys($contentEquals));
+            $query .= " {$keys}=?";
+            if(count($contentLike) > 0) {
+                $keys = implode(" like ? AND ", array_keys($contentLike));
+                $query .= " AND {$keys} like ?";
+            }
+            
+            $statement = mysqli_prepare($this->con, $query);
+            foreach ($contentLike as $key => $value) {
+                $contentLike[$key] = "%{$value}%";
+            }
+            $statement->bind_param($types, ...array_values(array_merge($contentEquals, $contentLike)));
+            $statement->execute();
+            $result = $statement->get_result();
+            return $result->fetch_assoc()[0];
+        }
+    }
+
     public function selectWhereLike($table, $types, $content, $offset = null, $limit = null, $orderBy = null)
     {
         if (in_array($table, $this->tables) && count($content) > 0) {
@@ -138,6 +161,47 @@ class QueryBuilder
             $statement->bind_param($types, ...array_values($content));
             $statement->execute();
             
+            $rows = [];
+            $result = $statement->get_result();
+            while ($row = $result->fetch_assoc()) {
+                $rows[] = $row;
+            }
+            $statement->close();
+            
+            return $rows;
+        }
+    }
+
+    public function selectWhereEqualLike($table, $types,$contentEquals, $contentLike, $offset = null, $limit = null, $orderBy = null)
+    {
+        if (in_array($table, $this->tables)) {
+            $query = "SELECT * FROM {$table} WHERE";
+
+            $keys = implode("=? AND ", array_keys($contentEquals));
+            $query .= " {$keys}=?";
+            if(count($contentLike) > 0) {
+                $keys = implode(" like ? AND ", array_keys($contentLike));
+                $query .= " AND {$keys} like ?";
+            }
+            
+            if (isset($orderBy)) {
+                $query .= " ORDER BY {$orderBy}";
+            }
+            if (isset($offset) && isset($limit)) {
+                $query .= ' LIMIT ?, ?;';
+            }
+            
+            $statement = mysqli_prepare($this->con, $query);
+            foreach ($contentLike as $key => $value) {
+                $contentLike[$key] = "%{$value}%";
+            }
+            if (isset($offset) && isset($limit)) {
+                $contentLike['offset'] = $offset;                
+                $contentLike['limit'] = $limit;
+                $types .= 'ii';
+            }
+            $statement->bind_param($types, ...array_values(array_merge($contentEquals, $contentLike)));
+            $statement->execute();
             $rows = [];
             $result = $statement->get_result();
             while ($row = $result->fetch_assoc()) {
