@@ -140,7 +140,7 @@ class HomeController extends Controller
             $qBuilder = App::get('qBuilder');
 
             $post = $qBuilder->selectById('news', $_GET['id']);
-            if ($post['is_deleted']) {
+            if ($post['is_deleted'] || !isset($post)) {
                 header('Location: /notFound');                
             }
 
